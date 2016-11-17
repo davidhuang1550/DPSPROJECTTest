@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+
+        android:id="@+id/topProfile">
+        <ImageView
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/profile"
+            android:background="@drawable/profilelayerlist"
+         />
+
+        <Button
+            android:layout_width="55dp"
+            android:layout_height="wrap_content"
+            android:text="Upload"
+            android:layout_margin="10px"
+            android:id="@+id/uploadprofile"
+            android:background="@drawable/uploadbutton"
+            android:shadowColor="#A8A8A8"
+            android:layout_gravity="right|top" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/bottomProfile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/topProfile"
+        android:layout_alignParentStart="true">
+
+
+        <Button
+            android:layout_width="196dp"
+            android:layout_height="wrap_content"
+            android:text="Posts"
+            android:id="@+id/selfposts"
+            android:layout_gravity="left|top" />
+
+        <Button
+            android:layout_width="196dp"
+            android:layout_height="wrap_content"
+            android:text="Bookmarks"
+            android:id="@+id/bookmarks"
+            android:layout_gravity="right|top" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/infoprofile"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/bottomProfile"
+        android:layout_alignParentStart="true">
+
+        <ListView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/profile_list_view"
+            android:layout_gravity="left|top" />
+    </FrameLayout>
+</RelativeLayout>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    tools:context="com.example.david.dpsproject.MainActivity">
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:ems="10"
+        android:id="@+id/userPassword"
+        android:hint="Password"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textEmailAddress"
+        android:hint="UserName"
+        android:ems="10"
+        android:id="@+id/userName"
+        android:layout_above="@+id/userPassword"
+        android:layout_alignStart="@+id/userPassword"
+        android:layout_marginBottom="89dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sign IN"
+        android:id="@+id/signIn"
+        android:layout_marginTop="66dp"
+        android:layout_below="@+id/userPassword"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dont have an account?"
+        android:id="@+id/signup"
+        android:layout_below="@+id/signIn"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="43dp" />
+
+</RelativeLayout>

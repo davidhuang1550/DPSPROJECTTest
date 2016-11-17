@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/grey">
+
+    <EditText
+        android:background="@drawable/customborder"
+        android:id="@+id/title_post"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="Title"
+        android:gravity="top|left"
+        android:inputType="textEmailAddress|textMultiLine"
+        android:lines="10"
+        android:minLines="2"
+        android:scrollHorizontally="false"
+        android:scrollbars="vertical"
+        android:singleLine="false"
+
+
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+    <EditText
+        android:background="@drawable/customborder"
+        android:id="@+id/sub_post"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="Subcategory"
+        android:gravity="top|left"
+        android:inputType="textEmailAddress|textMultiLine"
+        android:lines="10"
+        android:minLines="2"
+        android:scrollHorizontally="false"
+        android:scrollbars="vertical"
+        android:singleLine="false"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/title_post" />
+
+
+
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Submit"
+        android:id="@+id/post_button_upload"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+
+        android:layout_marginTop="97dp"
+        android:layout_below="@+id/sub_post"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="76dp" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Upload"
+        android:id="@+id/upload"
+        android:layout_alignTop="@+id/post_button_upload"
+        android:layout_toStartOf="@+id/post_button_upload"
+        android:layout_marginEnd="66dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=": Image"
+        android:id="@+id/uploadTextview"
+        android:layout_above="@+id/upload"
+        android:layout_alignStart="@+id/upload" />
+
+
+</RelativeLayout>

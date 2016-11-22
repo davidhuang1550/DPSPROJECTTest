@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.example.david.dpsproject.MainActivity">
+    tools:context="com.example.david.dpsproject.navigation">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -30,7 +30,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="130dp"
         android:layout_marginRight="23dp"
-        android:backgroundTint="@color/orange"
+        app:backgroundTint="@color/orange"
         android:src="@drawable/type"
         android:background="#fb8200" />
     <android.support.design.widget.FloatingActionButton
@@ -41,14 +41,14 @@
         android:layout_marginBottom="80dp"
         android:layout_marginRight="23dp"
         android:src="@drawable/images"
-        android:backgroundTint="@color/orange"
+        app:backgroundTint="@color/orange"
         android:background="#fb8200" />
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/compose"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:backgroundTint="@color/darkOrange"
+        app:backgroundTint="@color/darkOrange"
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/pencil"
         android:background="#fb8200" />

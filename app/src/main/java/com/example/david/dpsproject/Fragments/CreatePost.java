@@ -81,7 +81,7 @@ public class CreatePost extends Fragment implements View.OnClickListener{
         title = (TextView) myView.findViewById(R.id.title_post);
         desc = (TextView) myView.findViewById(R.id.description_post);
 
-        //System.out.println("JESUS");
+
         subString= new ArrayList<String>();
         if (!sub_cat.equals("") && !title.getText().equals("") && !desc.getText().equals("")) {
             dbReference.child("Users").child(firebaseUser.getUid()).child("Posts").child(sub_cat).addListenerForSingleValueEvent(new ValueEventListener() {

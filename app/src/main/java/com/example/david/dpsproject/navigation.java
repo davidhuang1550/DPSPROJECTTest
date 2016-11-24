@@ -209,27 +209,6 @@ public class navigation extends AppCompatActivity
             if(requestCode==1){
                imageUpload = data.getData();
                 filePath=getPath(this,imageUpload);
-               /* String[] filePathColumn={MediaStore.Images.Media.DATA};
-
-                Cursor cursor = getContentResolver().query(imageUpload,filePathColumn,null,null,null);
-                if(cursor==null){
-                    filePath=imageUpload.getPath();
-                }
-                else{
-                    cursor.moveToFirst();
-
-                    // int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                    int columnIndex = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-                    filePath= cursor.getString((columnIndex));
-                    cursor.close();
-
-                }*/
-                //cursor.moveToFirst();
-
-               // int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-              //  int columnIndex = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-              //  filePath= cursor.getString((columnIndex));
-              //  cursor.close();
 
                 final String action = data.getDataString();
                 String prefix = "/image";

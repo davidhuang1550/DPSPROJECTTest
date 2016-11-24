@@ -2,9 +2,12 @@ package com.example.david.dpsproject.Fragments;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -43,52 +46,102 @@ public class FrontPage extends Fragment {
     DatabaseReference dbReference;
     ArrayList<Post> posts;
     Bundle bundle;
-
+    ProgressDialog pDialog;
     FloatingActionButton fab;
     NavigationView navigationView;
     FirebaseAuth.AuthStateListener authStateListener;
     FirebaseUser firebaseUser;
 
     String Uid;
+    Users tempU;
     Activity mActivity;
-
+    TextView name;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mActivity=getActivity();
     }
-
+    public void ShowProgressDialog() { // progress
+        if (pDialog == null) {
+            pDialog = new ProgressDialog(getContext());
+            pDialog.setMessage("Loading Posts");
+            pDialog.setIndeterminate(true);
+        }
+        pDialog.show();
+    }
+    public void HideProgressDialog() {
+        if(pDialog!=null && pDialog.isShowing()){
+            pDialog.dismiss();
+        }
+    }
     @Override
     public void onStart() {
         super.onStart();
         firebaseUser = authentication.getCurrentUser();
         Menu nav_Menu = navigationView.getMenu();
 
-        NavigationView navigationView = (NavigationView)getActivity().findViewById(R.id.nav_view);
-        if(firebaseUser!=null){ // find if user is logged in set the title and replace sign in with logout
+        NavigationView navigationView = (NavigationView)mActivity.findViewById(R.id.nav_view);
+        if(firebaseUser!=null) { // find if user is logged in set the title and replace sign in with logout
 
             nav_Menu.findItem(R.id.login).setVisible(false);
             nav_Menu.findItem(R.id.profile).setVisible(true);
             nav_Menu.findItem(R.id.signout).setVisible(true);
-            dbReference.child("Users").child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    try {
 
-                        Users tempU = dataSnapshot.getValue(Users.class);
-                        TextView name = (TextView) mActivity.findViewById(R.id.headText);
-                        if(name!=null)name.setText(tempU.getUserName());
-                    } catch (DatabaseException e) {
+            final AsyncTask<Void, Void, Void> getuserName = new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected void onPreExecute() {
+                    ShowProgressDialog();
+                }
+
+                @Override
+                protected Void doInBackground(Void... params) {
+                    try {
+                        //    boolean keepgoing = true;
+                        Thread.sleep(1000);
+                        do {
+                            dbReference.child("Users").child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    try {
+                                        tempU = dataSnapshot.getValue(Users.class);
+                                        name = (TextView) mActivity.findViewById(R.id.headText);
+                                    } catch (DatabaseException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
+                        } while (name != null && tempU!=null);
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    return null;
                 }
-
                 @Override
-                public void onCancelled(DatabaseError databaseError) {
+                protected void onPostExecute(Void aVoid) {
 
+                  if(tempU!=null)name.setText(tempU.getUserName());
                 }
-            });
+
+            };
+            Handler handler = new Handler();
+            getuserName.execute();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if(getuserName.getStatus()==AsyncTask.Status.RUNNING){
+                        getuserName.cancel(true);
+                        HideProgressDialog();
+                        Toast.makeText(mActivity,"Error has occured ",Toast.LENGTH_SHORT).show();
+                    }
+                }
+            },5000);
         }
         else{
             nav_Menu.findItem(R.id.login).setVisible(true);
@@ -123,7 +176,9 @@ public class FrontPage extends Fragment {
 
                 ListView listView = (ListView)myView.findViewById(R.id.postview);
                 MyPostAdapter adapter = new MyPostAdapter(getActivity(),posts);
+
                 listView.setAdapter(adapter);
+                HideProgressDialog();
 
 
             }

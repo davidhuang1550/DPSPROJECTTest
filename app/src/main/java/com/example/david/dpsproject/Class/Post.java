@@ -15,18 +15,19 @@ public class Post implements Serializable {
     private String key;
     private String Description;
 
+    private Long Timestamp;
     private String SubN;
-    private String TimeStamp;
     private String Image;
     private ArrayList<Comment> comments;
     public Post(){
 
     }
 
-    public Post(String key, int no, int yes, String posterId, String title, ArrayList<Comment> comments, String description,String image){
+    public Post(String key, int no, int yes, String posterId, String title, ArrayList<Comment> comments, String description,String image,Long T){
 
         this.key = key;
         No = no;
+        Timestamp=T;
         Yes = yes;
         PosterId = posterId;
         Title = title;
@@ -34,16 +35,18 @@ public class Post implements Serializable {
         Description = description;
         Image=image;
     }
-    public Post(String posterId,String title,String description){
+    public Post(String posterId,String title,String description,Long T){
         Yes=0;No=0;
         PosterId=posterId;
         Title=title;
+        Timestamp=T;
         Description=description;
     }
-    public Post(String posterId,String title,String description,String image){
+    public Post(String posterId,String title,String description,String image, Long T){
         Yes=0;No=0;
         PosterId=posterId;
         Title=title;
+        Timestamp=T;
         Description=description;
         Image=image;
     }
@@ -61,7 +64,13 @@ public class Post implements Serializable {
     public void setComments(ArrayList<Comment> comments) {
         this.comments = comments;
     }
+    public Long getTimestamp() {
+        return Timestamp;
+    }
 
+    public void setTimestamp(Long timestamp) {
+        Timestamp = timestamp;
+    }
 
     public String getDescription() {
         return Description;

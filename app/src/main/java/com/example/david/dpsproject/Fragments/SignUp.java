@@ -26,6 +26,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by david on 2016-10-25.
@@ -53,7 +54,8 @@ public class SignUp extends Fragment implements View.OnClickListener {
                     Toast.makeText(getActivity(),"authentication failed",Toast.LENGTH_SHORT).show();
                 }
                 else{
-                    Users u = new Users(email,password, new Profile(new ArrayList<SubString>(),new ArrayList<SubString>()));
+                    Users u = new Users(email,password, new HashMap<String,ArrayList<String>>(),new HashMap<String,ArrayList<String>>(),
+                            new HashMap<String,ArrayList<String>>(),"",new ArrayList<String>());
                     dbReference.child("Users").child(task.getResult().getUser().getUid()).setValue(u);
                     FragmentManager fragmentManager = getFragmentManager();
                     fragmentManager.beginTransaction().replace(R.id.content_frame,new LogIn()).commit();

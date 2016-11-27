@@ -99,7 +99,7 @@ public class CreatePost extends Fragment implements View.OnClickListener{
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 try {
 
-                                    Post post = new Post(FirebaseAuth.getInstance().getCurrentUser().getUid(),title.getText().toString(),desc.getText().toString());
+                                    Post post = new Post(FirebaseAuth.getInstance().getCurrentUser().getUid(),title.getText().toString(),desc.getText().toString(),System.currentTimeMillis()/1000);
 
                                     if (dataSnapshot.getValue() != null) {
 
@@ -114,7 +114,7 @@ public class CreatePost extends Fragment implements View.OnClickListener{
 
                                     } else {
                                         Sub sub = new Sub();
-                                        Post first_post = new Post("ADMIN","FIRST POST OF THE SUB", ""); // first one
+                                        Post first_post = new Post("ADMIN","FIRST POST OF THE SUB", "",new Long(0)); // first one
 
                                         sub.pushPost(first_post);
                                         dbReference.child("Sub").child(sub_cat).setValue(sub);

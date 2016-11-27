@@ -89,7 +89,7 @@ public class post_view_button extends Fragment implements View.OnClickListener{
         }
         templist= new ArrayList<String>();
         databaseReference.child("Sub").child("Soccer").child("posts").child(post.getKey()).setValue(post);
-        databaseReference.child("Users").child(firebaseUser.getUid()).child("Viewed").child("Soccer").addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.child("Users").child(firebaseUser.getUid()).child("viewed").child("Soccer").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 try{

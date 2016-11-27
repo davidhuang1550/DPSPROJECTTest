@@ -3,6 +3,7 @@ package com.example.david.dpsproject.Fragments;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.ProgressDialog;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -26,7 +27,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by david on 2016-10-25.
@@ -101,7 +104,8 @@ public class LogIn extends Fragment implements View.OnClickListener {
                 }
                 else{
                     Bundle bundle = new Bundle();
-                    Users u = new Users(email,password, new Profile(new ArrayList<SubString>(),new ArrayList<SubString>()));
+                    Users u = new Users(email,password, new HashMap<String,ArrayList<String>>(),new HashMap<String,ArrayList<String>>(),
+                            new HashMap<String,ArrayList<String>>(),"",new ArrayList<String>());
                     FrontPage fragment = new FrontPage();
                     FragmentManager fragmentManager = getFragmentManager();
 

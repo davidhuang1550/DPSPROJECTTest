@@ -1,19 +1,29 @@
 package com.example.david.dpsproject;
 
+import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Base64;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -25,7 +35,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
+import com.example.david.dpsproject.Class.Users;
 import com.example.david.dpsproject.Dialog.PleaseLogin;
 import com.example.david.dpsproject.Dialog.SearchDialog;
 import com.example.david.dpsproject.Fragments.CreatePost;
@@ -34,11 +46,18 @@ import com.example.david.dpsproject.Fragments.LogIn;
 import com.example.david.dpsproject.Fragments.ProfileFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
-public class navigation extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+
+public class navigation extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,FragmentManager.OnBackStackChangedListener{
     protected Toolbar toolbar;
     private  String UID;
     DatabaseReference dbReference;
@@ -47,7 +66,11 @@ public class navigation extends AppCompatActivity
     FirebaseAuth.AuthStateListener authStateListener;
     NavigationView navigationView;
     String filePath;
-
+    Bitmap decodedprofilepic;
+    ProgressDialog pDialog;
+    Menu subMenu;
+    Users tempU;
+    TextView name;
     Uri imageUpload =null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,8 +86,8 @@ public class navigation extends AppCompatActivity
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.compose);
         final FloatingActionButton fab_image = (FloatingActionButton) findViewById(R.id.compse_images);
         final FloatingActionButton fab_desc = (FloatingActionButton) findViewById(R.id.compse_desc);
-        fab_desc.setSize(1);
-        fab_image.setSize(1);
+        fab_desc.setSize(FloatingActionButton.SIZE_MINI);
+        fab_image.setSize(FloatingActionButton.SIZE_MINI);
 
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -111,30 +134,46 @@ public class navigation extends AppCompatActivity
                 fragmentManager.beginTransaction().replace(R.id.content_frame,new CreatePost()).commit();
             }
         });
+      //  final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+
+        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
+        subMenu=navigationView.getMenu();
 
         android.app.FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().add(R.id.content_frame,new FrontPage()).commit();
+        fragmentManager.beginTransaction().add(R.id.content_frame,new FrontPage(),"FrontPage").commit();
 
+    }
+    public void setprofilepic(Bitmap p){
+        decodedprofilepic=p;
+    }
+    public Bitmap getprofilepic(){
+        return decodedprofilepic;
+    }
+    public Toolbar getToolbar(){
+        return toolbar;
     }
     public void setUID(String uid){
         UID=uid;
     }
-
+    private void switchFragment(Fragment fragment){
+        android.app.FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.content_frame, fragment).addToBackStack("Tag").commit();
+    }
     @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
+    public void onBackStackChanged() {
+        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+        if (getFragmentManager().getBackStackEntryCount() > 0 ){
+            getFragmentManager().popBackStack();
         } else {
             super.onBackPressed();
         }
@@ -155,9 +194,9 @@ public class navigation extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+      /*  if (id == R.id.action_settings) {
             return true;
-        }
+        }*/
 
         return super.onOptionsItemSelected(item);
     }
@@ -203,11 +242,115 @@ public class navigation extends AppCompatActivity
     public String getFilePath(){
         return filePath;
     }
+    public boolean checkReadExternalPermission(){
+        String permission = "android.permission.READ_EXTERNAL_STORAGE"; // get permissions
+        int res= checkCallingOrSelfPermission(permission);
+        return (res== PackageManager.PERMISSION_GRANTED);
+    }
+    private void requestForSpecificPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, 101);
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 101:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //granted
+                } else {
+                    Toast.makeText(this,"Permission needed to read image",Toast.LENGTH_SHORT).show();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+    public void getUser(){
+        final AsyncTask<Void, Void, Void> getuserName = new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected void onPreExecute() {
+                ShowProgressDialog();
+            }
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    //    boolean keepgoing = true;
+                    //Thread.sleep(1000);
+                    do {
+
+                        dbReference.child("Users").child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                try {
+                                    tempU = dataSnapshot.getValue(Users.class);
+                                    name = (TextView) findViewById(R.id.headText);
+                                } catch (DatabaseException e) {
+                                    Toast.makeText(getApplicationContext(),"something went wrong",Toast.LENGTH_SHORT).show();
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    } while (name != null && tempU!=null);
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                HideProgressDialog();
+                if(tempU!=null){
+                    name.setText(tempU.getUserName());
+                    if(tempU.getPicture()!=""&& tempU.getPicture()!=null) {
+                        final View layout = (View) findViewById(R.id.navPic);
+                        byte[] decodedString = Base64.decode(tempU.getPicture(), Base64.DEFAULT);
+                        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                        setprofilepic(decodedByte);
+                        layout.setBackground(new BitmapDrawable(getResources(),decodedByte));
+                    }
+                    Menu menu=getSubMenu();
+                    if(menu!=null){
+                        ArrayList<String> subcat =tempU.getSubcategory();
+                        for(int i=0; i<subcat.size();i++){
+                            menu.add(R.id.second_nav,Menu.NONE,0,subcat.get(i));
+                        }
+                    }
+
+                }
+                else System.out.println("error1");
+            }
+
+
+        };
+        Handler userhandler = new Handler();
+        getuserName.execute();
+        //userhandler.postDelayed
+        Runnable userthread= new Runnable() {
+            @Override
+            public void run() {
+                if(getuserName.getStatus()==AsyncTask.Status.RUNNING){
+                    getuserName.cancel(true);
+                    HideProgressDialog();
+                    Toast.makeText(getApplicationContext(),"Error has occured ",Toast.LENGTH_SHORT).show();
+                }
+            }
+        };//,5000);
+        userhandler.postDelayed(userthread,5000);
+    }
+    public Menu getSubMenu(){
+        return subMenu;
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode==RESULT_OK){
             if(requestCode==1){
-               imageUpload = data.getData();
+                imageUpload = data.getData();
                 filePath=getPath(this,imageUpload);
 
                 final String action = data.getDataString();
@@ -216,11 +359,56 @@ public class navigation extends AppCompatActivity
                 TextView textView = (TextView)findViewById(R.id.uploadTextview);
                 textView.setText("image"+split);
             }
+            else if(requestCode==2){
+                imageUpload = data.getData();
+                filePath=getPath(this,imageUpload);
+
+                //if (checkReadExternalPermission()) {
+                    final BitmapFactory.Options options = new BitmapFactory.Options();
+
+                    options.inSampleSize = 3;
+                    options.inScaled=false;
+                    Bitmap bitMap = BitmapFactory.decodeFile(filePath, options);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bitMap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                    byte[] bytes = stream.toByteArray();
+                    final String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
+
+
+                    dbReference.child("Users").child(firebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            Users users = dataSnapshot.getValue(Users.class);
+                            users.setPicture(base64Image);
+                            dbReference.child("Users").child(firebaseUser.getUid()).child("picture").setValue(base64Image);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+
         }
         else{
             Toast.makeText(this,"Something went wrong",Toast.LENGTH_SHORT).show();
         }
     }
+    public void ShowProgressDialog() { // progress
+        if (pDialog == null) {
+            pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading Posts");
+            pDialog.setIndeterminate(true);
+        }
+        pDialog.show();
+    }
+    public void HideProgressDialog() {
+        if(pDialog!=null && pDialog.isShowing()){
+            pDialog.dismiss();
+        }
+    }
+
     public static String getPath(final Context context, final Uri uri) {
 
         final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;

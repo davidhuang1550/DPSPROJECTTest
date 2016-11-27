@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -12,6 +13,8 @@ import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -22,6 +25,7 @@ import com.example.david.dpsproject.Class.Post;
 import com.example.david.dpsproject.Dialog.PleaseLogin;
 import com.example.david.dpsproject.R;
 import com.example.david.dpsproject.Fragments.postview;
+import com.example.david.dpsproject.navigation;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -32,7 +36,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by david on 2016-11-03.
@@ -65,7 +72,19 @@ public class MyPostAdapter extends BaseAdapter {
     public long getItemId(int i) {
         return 0;
     }
+    public void clearData(){
+       /* try{
+            Animation animation = AnimationUtils.loadAnimation(v.getContext(), R.anim.splashfadeout);
+            v.startAnimation(animation);
+            posts.remove(position);
+            notifyDataSetChanged();
+           // animation.cancel();
+        }catch (IndexOutOfBoundsException e){
+            e.printStackTrace();
+        }*/
+        posts.clear();
 
+    }
     @Override
     public View getView(final int i, View view, ViewGroup viewGroup) {
         View row;
@@ -73,12 +92,24 @@ public class MyPostAdapter extends BaseAdapter {
         row = inflater.inflate(R.layout.postlist,null);
 
         TextView tView = (TextView)row.findViewById(R.id.PostT);
-        TextView posterId = (TextView)row.findViewById(R.id.posterId);
+        TextView subcatView = (TextView)row.findViewById(R.id.sub_cat_view);
+        TextView TimeStamp =(TextView)row.findViewById(R.id.timestamp);
         final ImageView bookmark = (ImageView)row.findViewById(R.id.bookmark);
 
-        tView.setText(posts.get(i).getTitle());
 
-        posterId.setText(posts.get(i).getPosterId());
+        tView.setText(posts.get(i).getTitle());
+        if(posts.get(i).getTimestamp()!=null){
+            long temp = (System.currentTimeMillis()/1000)-(posts.get(i).getTimestamp());
+
+            if(temp<60)TimeStamp.setText(temp+" Second(s) ago");
+            else if((temp/60)<60)TimeStamp.setText(temp/60+" Minute(s) ago");
+            else if((temp/60)/60<24) TimeStamp.setText((temp/60)/60+" Hour(s) ago");
+            else if(temp/60/60/24<31)TimeStamp.setText((temp/60)/60/24+" Day(s) ago");
+            else if(temp/60/60/24/30<13)TimeStamp.setText((temp/60)/60/24/30+" Month(s) ago");
+            else TimeStamp.setText((temp/60)/60/24/30/12+" Year(s) ago");
+
+        }
+        subcatView.setText(posts.get(i).getSubN());
 
         firebaseUser = authentication.getCurrentUser();
         if(firebaseUser!=null){
@@ -162,12 +193,17 @@ public class MyPostAdapter extends BaseAdapter {
 
                 Bundle bundle = new Bundle();
 
-                FragmentManager fragmentManager = ((Activity)context).getFragmentManager();
+
+              //  FragmentManager fragmentManager = ((Activity)context).getFragmentManager();
                 postview pV = new postview();
                 bundle.putSerializable("Post_Object", (Serializable) posts.get(i));
                 bundle.putString("UID",posts.get(i).getPosterId());
                 pV.setArguments(bundle);
-                fragmentManager.beginTransaction().replace(R.id.content_frame, pV).commit();
+               // fragmentManager.beginTransaction().replace(R.id.content_frame, pV).addToBackStack("Posts").commit();
+
+                FragmentTransaction transaction= ((navigation)context).getFragmentManager().beginTransaction();
+                transaction.setCustomAnimations(R.animator.enter_anim,R.animator.exit_anim,R.animator.enter_anim_back,R.animator.exit_anime_back);
+                transaction.add(R.id.content_frame,pV).addToBackStack("Posts").commit();
 
             }
         });

@@ -11,6 +11,7 @@ public class Profile {
 
     private ArrayList<SubString> Subs;
     private ArrayList<SubString> Bookmarks;
+    private ArrayList<SubString> Viewed;
 
     public Profile(){
         Subs= new ArrayList<SubString>();

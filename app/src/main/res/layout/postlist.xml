@@ -27,9 +27,9 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Medium Text"
             android:background="@color/white"
-            android:layout_margin="10dp"
+            android:layout_margin="3dp"
             android:textSize="15dp"
-            android:id="@+id/posterId"
+            android:id="@+id/sub_cat_view"
             android:layout_gravity="center_horizontal|bottom" />
 
         <ImageView
@@ -38,6 +38,16 @@
             android:clickable="true"
             android:src="@drawable/bookmarkunchecked"
             android:id="@+id/bookmark"
+            android:layout_gravity="right|bottom" />
+
+        <TextView
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:layout_marginRight="200px"
+            android:textSize="10dp"
+            android:layout_marginBottom="10px"
+            android:id="@+id/timestamp"
             android:layout_gravity="right|bottom" />
     </FrameLayout>
 </LinearLayout>

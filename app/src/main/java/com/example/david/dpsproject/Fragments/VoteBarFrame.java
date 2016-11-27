@@ -26,6 +26,7 @@ public class VoteBarFrame extends Fragment {
     private ProgressBar pBar;
     private TextView textView;
     int pStatus = 0;
+    int spStatus=0;
     private TextView totalVote;
     private Handler handler = new Handler();
     private Activity mActivity;
@@ -55,14 +56,15 @@ public class VoteBarFrame extends Fragment {
                     @Override
                     public void run() {
                         // TODO Auto-generated method stub
-                        while (pStatus <= total && pStatus<=100) {
+                        while ((pStatus < total && pStatus<=100)||spStatus<=100) {
 
                             handler.post(new Runnable() {
 
                                 @Override
                                 public void run() {
-                                    // TODO Auto-generated method stub
+
                                     pBar.setProgress(pStatus);
+                                    pBar.setSecondaryProgress(spStatus);
                                     textView.setText(pStatus+"%");
                                 }
                             });
@@ -73,7 +75,8 @@ public class VoteBarFrame extends Fragment {
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                            pStatus++;
+                            if(pStatus<total)pStatus++;
+                            if(spStatus<=100)spStatus++;
                         }
 
 

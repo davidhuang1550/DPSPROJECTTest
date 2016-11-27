@@ -1,27 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
+    <group android:checkableBehavior="single" android:id="@+id/main_nav">
         <item
             android:id="@+id/profile"
-
+            android:icon="@drawable/user"
             android:title="Profile" />
         <item
             android:id="@+id/login"
-
+            android:icon="@drawable/login"
             android:title="Log In" />
         <item
             android:id="@+id/frontpage"
-
+            android:icon="@drawable/home"
             android:title="Front Page" />
         <item
             android:id="@+id/search"
-
+            android:icon="@drawable/search"
             android:title="Search" />
         <item
             android:id="@+id/signout"
-
+            android:icon="@drawable/logout"
             android:title="Sign Out" />
+
+    </group>
+    <group android:checkableBehavior="single" android:id="@+id/second_nav">
 
     </group>
 

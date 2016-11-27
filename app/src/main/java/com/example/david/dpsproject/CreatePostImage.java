@@ -156,7 +156,7 @@ public class CreatePostImage  extends Fragment implements View.OnClickListener{
                                             if (checkReadExternalPermission()) {
                                                 mActivity=getActivity();
                                                 final BitmapFactory.Options options = new BitmapFactory.Options();
-                                                options.inSampleSize = 8;
+                                                options.inSampleSize = 2;
                                                 bitMap = BitmapFactory.decodeFile(((navigation) mActivity).filePath, options);
                                                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                                                 bitMap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
@@ -164,7 +164,7 @@ public class CreatePostImage  extends Fragment implements View.OnClickListener{
                                                 String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
                                                 FrontPage frontPage = new FrontPage();
                                                 FragmentManager fragmentManager = mActivity.getFragmentManager();
-                                                Post post = new Post(FirebaseAuth.getInstance().getCurrentUser().getUid(), title.getText().toString(), "", base64Image);
+                                                Post post = new Post(FirebaseAuth.getInstance().getCurrentUser().getUid(), title.getText().toString(), "", base64Image,System.currentTimeMillis()/1000);
                                                 if (dataSnapshot.getValue() != null) {
                                                     DatabaseReference postref = dbReference.child("Sub").child(sub_cat).child("posts").push();
                                                     postref.setValue(post);
@@ -173,7 +173,7 @@ public class CreatePostImage  extends Fragment implements View.OnClickListener{
                                                     fragmentManager.beginTransaction().replace(R.id.content_frame, frontPage).commit();
                                                 } else {
                                                     Sub sub = new Sub();
-                                                    Post first_post = new Post("ADMIN", "FIRST POST OF THE SUB", ""); // first one
+                                                    Post first_post = new Post("ADMIN", "FIRST POST OF THE SUB", "",new Long(0)); // first one
                                                     sub.pushPost(first_post);
                                                     dbReference.child("Sub").child(sub_cat).setValue(sub);
                                                     DatabaseReference postref = dbReference.child("Sub").child(sub_cat).child("posts").push();

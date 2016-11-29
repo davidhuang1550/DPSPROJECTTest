@@ -29,6 +29,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by david on 2016-10-27.
@@ -56,7 +57,7 @@ public class CreatePost extends Fragment implements View.OnClickListener{
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getActivity().setTitle("Create Post");
+        mActivity.setTitle("Create Post");
         myView = inflater.inflate(R.layout.create_post,container,false);
         authentication= FirebaseAuth.getInstance(); // get instance of my firebase console
         dbReference = FirebaseDatabase.getInstance().getReference(); // access to database
@@ -99,7 +100,7 @@ public class CreatePost extends Fragment implements View.OnClickListener{
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 try {
 
-                                    Post post = new Post(FirebaseAuth.getInstance().getCurrentUser().getUid(),title.getText().toString(),desc.getText().toString(),System.currentTimeMillis()/1000);
+                                    Post post = new Post(FirebaseAuth.getInstance().getCurrentUser().getUid(),title.getText().toString(),desc.getText().toString(),System.currentTimeMillis()/1000,sub_cat);
 
                                     if (dataSnapshot.getValue() != null) {
 
@@ -112,9 +113,17 @@ public class CreatePost extends Fragment implements View.OnClickListener{
 
                                         dbReference.child("Users").child(firebaseUser.getUid()).child("Posts").child(sub_cat).setValue(subString);
 
+                                        //String tempkey= Integer.toString(postref.getKey()) ;
+                                       /* String tempTime=Long.toString((System.currentTimeMillis()/1000));
+                                        HashMap<String,String> temphash= new HashMap<String, String>();
+                                        temphash.put(postref.getKey().toString(),tempTime+"_0");
+                                        DatabaseReference post2ref=dbReference.child("SubPost").child(sub_cat).push();
+                                        post2ref.setValue(temphash);*/
+
+
                                     } else {
                                         Sub sub = new Sub();
-                                        Post first_post = new Post("ADMIN","FIRST POST OF THE SUB", "",new Long(0)); // first one
+                                        Post first_post = new Post("ADMIN","FIRST POST OF THE SUB", "",new Long(0),sub_cat); // first one
 
                                         sub.pushPost(first_post);
                                         dbReference.child("Sub").child(sub_cat).setValue(sub);
@@ -127,6 +136,12 @@ public class CreatePost extends Fragment implements View.OnClickListener{
                                       //  dbReference.child("Users").child(firebaseUser.getUid()).child("Posts").setValue(profile);
                                         subString.add(postref.getKey());
                                         dbReference.child("Users").child(firebaseUser.getUid()).child("Posts").child(sub_cat).setValue(subString);
+
+                                       /* String tempTime=Long.toString((System.currentTimeMillis()/1000));
+                                        HashMap<String,String> temphash= new HashMap<String, String>();
+                                        temphash.put(postref.getKey().toString(),tempTime+"_0");
+                                        DatabaseReference post2ref=dbReference.child("SubPost").child(sub_cat).push();
+                                        post2ref.setValue(temphash);*/
 
                                         dbReference.child("Sub").child(sub_cat).child("posts").child("0").removeValue(); // remove inital commit
                                     }
@@ -163,6 +178,11 @@ public class CreatePost extends Fragment implements View.OnClickListener{
             Toast.makeText(getActivity(),"Every Field Must not be empty",Toast.LENGTH_SHORT).show();
         }
 
+    }
+    public void onDestroy() {
+        ViewGroup container = (ViewGroup)mActivity.findViewById(R.id.content_frame);
+        container.removeAllViews();
+        super.onDestroy();
     }
 
 }

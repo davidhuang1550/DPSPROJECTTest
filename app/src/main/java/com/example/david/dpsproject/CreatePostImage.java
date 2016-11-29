@@ -164,7 +164,7 @@ public class CreatePostImage  extends Fragment implements View.OnClickListener{
                                                 String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
                                                 FrontPage frontPage = new FrontPage();
                                                 FragmentManager fragmentManager = mActivity.getFragmentManager();
-                                                Post post = new Post(FirebaseAuth.getInstance().getCurrentUser().getUid(), title.getText().toString(), "", base64Image,System.currentTimeMillis()/1000);
+                                                Post post = new Post(FirebaseAuth.getInstance().getCurrentUser().getUid(), title.getText().toString(), "", base64Image,System.currentTimeMillis()/1000,sub_cat);
                                                 if (dataSnapshot.getValue() != null) {
                                                     DatabaseReference postref = dbReference.child("Sub").child(sub_cat).child("posts").push();
                                                     postref.setValue(post);
@@ -173,7 +173,7 @@ public class CreatePostImage  extends Fragment implements View.OnClickListener{
                                                     fragmentManager.beginTransaction().replace(R.id.content_frame, frontPage).commit();
                                                 } else {
                                                     Sub sub = new Sub();
-                                                    Post first_post = new Post("ADMIN", "FIRST POST OF THE SUB", "",new Long(0)); // first one
+                                                    Post first_post = new Post("ADMIN", "FIRST POST OF THE SUB", "",new Long(0),sub_cat); // first one
                                                     sub.pushPost(first_post);
                                                     dbReference.child("Sub").child(sub_cat).setValue(sub);
                                                     DatabaseReference postref = dbReference.child("Sub").child(sub_cat).child("posts").push();

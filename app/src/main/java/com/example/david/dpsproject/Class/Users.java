@@ -106,4 +106,15 @@ public class Users {
         this.userName = userName;
     }
 
+    public void addSub(String s){
+        Subcategory.add(s);
+    }
+    public void deleteSub(String s){
+        for(String temp:Subcategory){
+            if(temp.equals(s)){
+                Subcategory.remove(s);
+            }
+        }
+    }
+
 }

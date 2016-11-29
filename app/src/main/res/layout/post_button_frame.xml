@@ -11,32 +11,27 @@
 
         <Button android:id="@+id/yes"
 
-            android:text="YES"
+            android:text=""
             android:textColor="#FFFFFF"
             android:textSize="30sp"
-
             android:layout_width="150dp"
             android:layout_height="150dp"
-            android:background="@drawable/button"
+            android:background="@drawable/thumbs_up"
             android:shadowColor="#A8A8A8"
-            android:shadowDx="0"
-            android:shadowDy="0"
-            android:shadowRadius="5"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_alignParentStart="true"
             android:layout_gravity="right|center_vertical" />
 
         <Button
             android:id="@+id/no"
-            android:text="NO"
+            android:text=""
             android:textColor="#FFFFFF"
             android:textSize="30sp"
             android:layout_width="150dp"
             android:layout_height="150dp"
-            android:background="@drawable/redbutton"
+            android:background="@drawable/thumbs_down"
             android:shadowColor="#A8A8A8"
-            android:shadowDx="0"
-            android:shadowDy="0"
-            android:shadowRadius="5"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_alignTop="@+id/yes"
             android:layout_alignParentEnd="true"
             android:layout_gravity="left|center_vertical" />

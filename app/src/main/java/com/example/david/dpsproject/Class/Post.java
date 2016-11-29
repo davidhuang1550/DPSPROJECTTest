@@ -23,7 +23,7 @@ public class Post implements Serializable {
 
     }
 
-    public Post(String key, int no, int yes, String posterId, String title, ArrayList<Comment> comments, String description,String image,Long T){
+    public Post(String key, int no, int yes, String posterId, String title, ArrayList<Comment> comments, String description,String image,Long T,String sn){
 
         this.key = key;
         No = no;
@@ -34,21 +34,24 @@ public class Post implements Serializable {
         this.comments = comments;
         Description = description;
         Image=image;
+        SubN=sn;
     }
-    public Post(String posterId,String title,String description,Long T){
+    public Post(String posterId,String title,String description,Long T,String sn){
         Yes=0;No=0;
         PosterId=posterId;
         Title=title;
         Timestamp=T;
         Description=description;
+        SubN=sn;
     }
-    public Post(String posterId,String title,String description,String image, Long T){
+    public Post(String posterId,String title,String description,String image, Long T,String sn){
         Yes=0;No=0;
         PosterId=posterId;
         Title=title;
         Timestamp=T;
         Description=description;
         Image=image;
+        SubN=sn;
     }
     public String getImage() {
         return Image;

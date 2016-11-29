@@ -1,5 +1,6 @@
 package com.example.david.dpsproject.Fragments;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.ProgressDialog;
@@ -42,8 +43,13 @@ public class SignUp extends Fragment implements View.OnClickListener {
     //Firebase variables
     FirebaseAuth authentication;
     DatabaseReference dbReference;
+    Activity mActivity;
 
-
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mActivity=getActivity();
+    }
 
     protected void createNewAccount(final String email, final String password){
         authentication.createUserWithEmailAndPassword(email,password).addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
@@ -102,4 +108,10 @@ public class SignUp extends Fragment implements View.OnClickListener {
 
         return myView;
     }
+    public void onDestroy() {
+        ViewGroup container = (ViewGroup)mActivity.findViewById(R.id.content_frame);
+        container.removeAllViews();
+        super.onDestroy();
+    }
+
 }

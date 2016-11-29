@@ -74,17 +74,6 @@ public class postview extends Fragment  {
             Description.setText(post.getDescription());
         }
 
-        //Fragment fragment = mActivity.getFragmentManager().findFragmentByTag("FrontPage");
-       // View layout = (View)mActivity.findViewById(R.id.frontpage);
-        //layout.setClickable(false);
-       /// ListView listView = (ListView)layout.findViewById(R.id.postview);
-        //listView.setClickable(false);
-       /* layout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                return false;
-            }
-        });*/
 
         firebaseAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference();
@@ -136,4 +125,9 @@ public class postview extends Fragment  {
         }
         return myView;
     }
+   /* public void onDestroy() {
+        ViewGroup container = (ViewGroup)mActivity.findViewById(R.id.content_frame);
+        container.removeAllViews();
+        super.onDestroy();
+    }*/
 }

@@ -77,6 +77,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         myView = inflater.inflate(R.layout.profile_fragment,container,false);
+        mActivity.setTitle("Profile");
 
         History = (TextView) myView.findViewById(R.id.Tposts);
         Bookmarks = (TextView) myView.findViewById(R.id.Tbookmark);
@@ -150,6 +151,12 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     private void requestForSpecificPermission() {
         ActivityCompat.requestPermissions(mActivity, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, 101);
     }
+    public void onDestroy() {
+        ViewGroup container = (ViewGroup)mActivity.findViewById(R.id.content_frame);
+        container.removeAllViews();
+        super.onDestroy();
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {

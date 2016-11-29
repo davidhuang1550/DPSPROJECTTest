@@ -20,9 +20,7 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.app.FragmentManager;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Base64;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -35,8 +33,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
+import com.example.david.dpsproject.AsyncTask.UserAsyncTask;
 import com.example.david.dpsproject.Class.Users;
 import com.example.david.dpsproject.Dialog.PleaseLogin;
 import com.example.david.dpsproject.Dialog.SearchDialog;
@@ -52,26 +50,33 @@ import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-
+/*
+change it up in a way so that the user does not pull everything from db just to change one thing but append to the end instead of adding to arraylist
+ */
 public class navigation extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,FragmentManager.OnBackStackChangedListener{
     protected Toolbar toolbar;
     private  String UID;
+
     DatabaseReference dbReference;
     FirebaseAuth authentication;
     FirebaseUser firebaseUser;
-    FirebaseAuth.AuthStateListener authStateListener;
+
     NavigationView navigationView;
+
     String filePath;
     Bitmap decodedprofilepic;
     ProgressDialog pDialog;
     Menu subMenu;
     Users tempU;
+    String SubCat;
     TextView name;
+    MenuItem subscribeId;
+    MenuItem unsubscribId;
     Uri imageUpload =null;
+    Bitmap decodedByte;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +93,7 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
         final FloatingActionButton fab_desc = (FloatingActionButton) findViewById(R.id.compse_desc);
         fab_desc.setSize(FloatingActionButton.SIZE_MINI);
         fab_image.setSize(FloatingActionButton.SIZE_MINI);
+
 
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -147,8 +153,20 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
         navigationView.setNavigationItemSelectedListener(this);
         subMenu=navigationView.getMenu();
 
+        FrontPage frontPage= new FrontPage();
+        Bundle bundle = new Bundle();
+        if(firebaseUser!=null){
+            getUser();
+            bundle.putString("user","true");
+            frontPage.setArguments(bundle);
+        }
+        else{
+            bundle.putString("user","false");
+            frontPage.setArguments(bundle);
+
+        }
         android.app.FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().add(R.id.content_frame,new FrontPage(),"FrontPage").commit();
+        fragmentManager.beginTransaction().add(R.id.content_frame,frontPage,"FrontPage").commit();
 
     }
     public void setprofilepic(Bitmap p){
@@ -162,6 +180,12 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
     }
     public void setUID(String uid){
         UID=uid;
+    }
+    public void setSubCat(String sub){
+        SubCat=sub;
+    }
+    public String getSubCat(){
+        return SubCat;
     }
     private void switchFragment(Fragment fragment){
         android.app.FragmentManager fragmentManager = getFragmentManager();
@@ -183,7 +207,61 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        subscribeId=menu.getItem(0);
+        subscribeId.setVisible(false);
+        unsubscribId=menu.getItem(1);
+        unsubscribId.setVisible(false);
         return true;
+    }
+    public void showUnsubscribe(){
+        if(unsubscribId!=null)unsubscribId.setVisible(true);
+    }
+    public void showSubscribe(){
+        if(subscribeId!=null)subscribeId.setVisible(true);
+    }
+    public void hideUnsubscribe(){
+        if(unsubscribId!=null)unsubscribId.setVisible(false);
+    }
+    public void hidesubscribe(){
+        if(subscribeId!=null)subscribeId.setVisible(false);
+    }
+    public void hideAllSubscribe(){
+
+        if(subscribeId!=null)subscribeId.setVisible(false);
+        if(unsubscribId!=null)unsubscribId.setVisible(false);
+
+    }
+
+    private void pushsubtodatabase(){
+        dbReference.child("Users").child(firebaseUser.getUid()).child("Subcategory").setValue(tempU.getSubcategory());
+    }
+    public void reload_menu(){
+        Menu menu=getSubMenu();
+        if(menu!=null){
+            menu.removeGroup(R.id.second_nav);
+            ArrayList<String> subcat =tempU.getSubcategory();
+            for(int i=0; i<subcat.size();i++){
+                menu.add(R.id.second_nav,Menu.NONE,0,subcat.get(i));
+            }
+        }
+    }
+    public void remove_menu(){
+        Menu menu=getSubMenu();
+        if(menu!=null){
+            menu.removeGroup(R.id.second_nav);
+        }
+    }
+    public void ModifySub(String s,int p){
+        if(tempU!=null){
+            if(p==0){
+                tempU.addSub(s);
+                pushsubtodatabase();
+            }else if(p==1){
+                tempU.deleteSub(s);
+                pushsubtodatabase();
+            }else{Toast.makeText(this,"Something went wrong",Toast.LENGTH_SHORT).show();}
+
+        }else{Toast.makeText(this,"Please sign in to subscribe",Toast.LENGTH_SHORT).show();}
     }
 
     @Override
@@ -192,13 +270,68 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        final ProgressDialog mprogressDialog = ProgressDialog.show(this, "Please wait","Saving Changes", true);
+        if(SubCat!=null) {
+            if (id == R.id.subscribe) {
+                new Thread(){
+                    @Override
+                    public void run() {
+                        ModifySub(SubCat,0);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                reload_menu();
+                                showUnsubscribe();
+                                hidesubscribe();
+                                mprogressDialog.dismiss();
+                            }
+                        });
 
-        //noinspection SimplifiableIfStatement
-      /*  if (id == R.id.action_settings) {
-            return true;
-        }*/
+                    }
+                }.start();
+
+
+            } else if (id == R.id.Unsubscribe) {
+                new Thread(){
+                    @Override
+                    public void run() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ModifySub(SubCat,1);
+                                showSubscribe();
+                                hideUnsubscribe();
+                                mprogressDialog.dismiss();
+                            }
+                        });
+                    }
+                }.start();
+
+
+            }
+        }
 
         return super.onOptionsItemSelected(item);
+    }
+    public void Load_User_profile(){
+
+        firebaseUser = authentication.getCurrentUser();
+        getUser();
+    }
+    public void remove_nav_image(){
+        View Layout = (View)findViewById(R.id.navPic);
+        Layout.setBackgroundResource(R.drawable.default_desktop);
+    }
+    public void freeUserData(){
+        Menu nav_Menu = navigationView.getMenu();
+        nav_Menu.findItem(R.id.login).setVisible(true);// set logout and login respectively
+        nav_Menu.findItem(R.id.signout).setVisible(false);
+        nav_Menu.findItem(R.id.profile).setVisible(false);
+        TextView name = (TextView) findViewById(R.id.headText); // remove menu name
+        name.setText("");
+        remove_menu();
+        remove_nav_image();
+
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -222,16 +355,8 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
             searchDialog.show(getFragmentManager(),"Search Dialog Fragment");
 
         } else if(id==R.id.signout){
-
+            freeUserData();
             FirebaseAuth.getInstance().signOut();
-            Menu nav_Menu = navigationView.getMenu();
-            nav_Menu.findItem(R.id.login).setVisible(true);// set logout and login respectively
-            nav_Menu.findItem(R.id.signout).setVisible(false);
-            nav_Menu.findItem(R.id.profile).setVisible(false);
-
-            TextView name = (TextView) findViewById(R.id.headText); // remove menu name
-            name.setText("");
-
             fragmentManager.beginTransaction().replace(R.id.content_frame,new LogIn()).commit();
         }
 
@@ -250,6 +375,9 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
     private void requestForSpecificPermission() {
         ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, 101);
     }
+    public void setFirebaseUser(FirebaseUser firebaseUsers){
+        firebaseUser=firebaseUsers;
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
@@ -264,8 +392,12 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
+    public Users getworkingUser(){
+        return tempU;
+    }
     public void getUser(){
-        final AsyncTask<Void, Void, Void> getuserName = new AsyncTask<Void, Void, Void>() {
+
+       final AsyncTask<Void, Void, Void> getuserName = new AsyncTask<Void, Void, Void>() {
             @Override
             protected void onPreExecute() {
                 ShowProgressDialog();
@@ -274,8 +406,6 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
             @Override
             protected Void doInBackground(Void... params) {
                 try {
-                    //    boolean keepgoing = true;
-                    //Thread.sleep(1000);
                     do {
 
                         dbReference.child("Users").child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
@@ -284,53 +414,59 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
                                 try {
                                     tempU = dataSnapshot.getValue(Users.class);
                                     name = (TextView) findViewById(R.id.headText);
+                                  //  byte[] decodedString = Base64.decode(tempU.getPicture(), Base64.DEFAULT);
+                                 //   decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                                   // setprofilepic(decodedByte);
                                 } catch (DatabaseException e) {
-                                    Toast.makeText(getApplicationContext(),"something went wrong",Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "something went wrong", Toast.LENGTH_SHORT).show();
                                     e.printStackTrace();
                                 }
                             }
-
                             @Override
                             public void onCancelled(DatabaseError databaseError) {
 
                             }
                         });
-                    } while (name != null && tempU!=null);
-                    Thread.sleep(1000);
+                        //   Thread.sleep(1000);
+                    } while (name != null && tempU != null);
+                    Thread.sleep(500);
+
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 return null;
             }
+
             @Override
             protected void onPostExecute(Void aVoid) {
-                HideProgressDialog();
-                if(tempU!=null){
+             //   HideProgressDialog();
+                if (tempU != null) {
                     name.setText(tempU.getUserName());
-                    if(tempU.getPicture()!=""&& tempU.getPicture()!=null) {
-                        final View layout = (View) findViewById(R.id.navPic);
+                    final View layout = (View) findViewById(R.id.navPic);
+                    if (tempU.getPicture() != "" && tempU.getPicture() != null) {
                         byte[] decodedString = Base64.decode(tempU.getPicture(), Base64.DEFAULT);
-                        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                        decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
                         setprofilepic(decodedByte);
-                        layout.setBackground(new BitmapDrawable(getResources(),decodedByte));
+                        layout.setBackground(new BitmapDrawable(getResources(), decodedByte));
                     }
                     Menu menu=getSubMenu();
-                    if(menu!=null){
-                        ArrayList<String> subcat =tempU.getSubcategory();
-                        for(int i=0; i<subcat.size();i++){
-                            menu.add(R.id.second_nav,Menu.NONE,0,subcat.get(i));
+
+                    if(menu!=null) {
+                        ArrayList<String> subcat = tempU.getSubcategory();
+                        for (int i = 0; i < subcat.size(); i++) {
+                            menu.add(R.id.second_nav, Menu.NONE, 0, subcat.get(i));
                         }
                     }
-
                 }
-                else System.out.println("error1");
+                else System.out.println("error1"); // set logout settings if this happens
             }
 
-
         };
+
         Handler userhandler = new Handler();
+
         getuserName.execute();
-        //userhandler.postDelayed
+
         Runnable userthread= new Runnable() {
             @Override
             public void run() {
@@ -342,6 +478,9 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
             }
         };//,5000);
         userhandler.postDelayed(userthread,5000);
+    }
+    public void setUser(Users user){
+        tempU=user;
     }
     public Menu getSubMenu(){
         return subMenu;

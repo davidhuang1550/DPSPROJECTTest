@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -65,6 +66,33 @@ public class post_view_button extends Fragment implements View.OnClickListener{
         No = (Button)myView.findViewById(R.id.no);
         yes.setOnClickListener(this);
         No.setOnClickListener(this);
+
+        yes.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(motionEvent.getAction()==MotionEvent.ACTION_UP) {
+                    yes.setAlpha(1);
+                }else if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
+                    yes.setAlpha(new Float(.5));
+                }
+
+
+                return false;
+            }
+        });
+        No.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(motionEvent.getAction()==MotionEvent.ACTION_UP) {
+                    No.setAlpha(1);
+                }else if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
+                    No.setAlpha(new Float(.5));
+                }
+
+                return false;
+            }
+        });
+
         return myView;
     }
 

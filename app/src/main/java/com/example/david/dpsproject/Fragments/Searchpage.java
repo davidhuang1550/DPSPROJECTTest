@@ -2,6 +2,7 @@ package com.example.david.dpsproject.Fragments;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 
 import com.example.david.dpsproject.Adapters.MyPostAdapter;
 import com.example.david.dpsproject.Class.Post;
+import com.example.david.dpsproject.Class.Users;
 import com.example.david.dpsproject.R;
 import com.example.david.dpsproject.navigation;
 import com.google.firebase.auth.FirebaseAuth;
@@ -39,6 +41,8 @@ public class Searchpage extends Fragment {
     private SwipeRefreshLayout refreshLayout;
     private DatabaseReference dbReference;
     private ListView listView;
+    private String Sub;
+    private Users users;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +56,7 @@ public class Searchpage extends Fragment {
                 ArrayList<Post> posts = new ArrayList<Post>();
                 for(DataSnapshot s:dataSnapshot.getChildren()){
                     Post post = s.getValue(Post.class);
+                    post.setKey(s.getKey());
                     posts.add(post);
 
                 }
@@ -76,6 +81,20 @@ public class Searchpage extends Fragment {
             }
         });
     }
+    public void setSubscribe(){
+        users= ((navigation)mActivity).getworkingUser();
+        boolean showsubscribe=false;
+        if(users!=null){
+            for(String s:users.getSubcategory()){
+                if(s.equals(Sub)){
+                    ((navigation)mActivity).showUnsubscribe();
+                    showsubscribe=true;
+                    break;
+                }
+            }
+            if(!showsubscribe)((navigation)mActivity).showSubscribe();
+        }
+    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         myView = inflater.inflate(R.layout.searchpage,container,false);
@@ -84,10 +103,31 @@ public class Searchpage extends Fragment {
         firebaseUser = authentication.getCurrentUser();
         listView = (ListView)myView.findViewById(R.id.listView);
         final Bundle b = getArguments();
-        if(b!=null){
-            ((navigation)mActivity).ShowProgressDialog();
-           loadPost(b.getString("Sub"));
+        if(b!=null) {
+            ((navigation) mActivity).ShowProgressDialog();
+            ((navigation)mActivity).setSubCat(b.getString("Sub"));
+            Sub = b.getString("Sub");
+            mActivity.setTitle(Sub);
+            final ProgressDialog mprogressDialog = ProgressDialog.show(mActivity, "Please wait","Loading Posts", true);
+            new Thread(){
+                @Override
+                public void run() {
+                    loadPost(b.getString("Sub"));
+
+                    mActivity.runOnUiThread(new Runnable(){
+                        @Override
+                        public void run() {
+                            setSubscribe();
+                            mprogressDialog.dismiss();
+                        }
+                    });
+
+                }
+            }.start();
+
+
         }
+
         refreshLayout = (SwipeRefreshLayout)myView.findViewById(R.id.swiperefresh);
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -112,6 +152,11 @@ public class Searchpage extends Fragment {
         });
 
         return myView;
+    }
+    public void onDestroy() {
+        ViewGroup container = (ViewGroup)mActivity.findViewById(R.id.content_frame);
+        container.removeAllViews();
+        super.onDestroy();
     }
 
 }

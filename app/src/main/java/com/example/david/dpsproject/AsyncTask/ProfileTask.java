@@ -20,6 +20,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Created by david on 2016-11-23.
@@ -87,7 +88,7 @@ public class ProfileTask extends AsyncTask<Void,Void,Void>{
                                         try {
                                             Post post = dataSnapshot.getValue(Post.class);
                                             if (post != null) {
-
+                                                post.setKey(dataSnapshot.getKey());
                                                 ptemp.add(post);
                                             }
 
@@ -119,6 +120,7 @@ public class ProfileTask extends AsyncTask<Void,Void,Void>{
     @Override
     protected void onPostExecute(Void aVoid) {
         HideProgressDialog();
+        //Collections.shuffle(ptemp);
         listView = (ListView) myView.findViewById(R.id.profile_list_view);
         MyPostAdapter adapter = new MyPostAdapter(mActivity, ptemp);
         listView.setAdapter(adapter);

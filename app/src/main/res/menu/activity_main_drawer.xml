@@ -25,6 +25,7 @@
 
     </group>
     <group android:checkableBehavior="single" android:id="@+id/second_nav">
+        <item android:id="@+id/subtitle" android:enabled="false" android:title="Subcategory"/>
 
     </group>
 

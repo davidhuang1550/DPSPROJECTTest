@@ -57,6 +57,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Created by david on 2016-10-25.
@@ -65,25 +66,19 @@ import java.util.ArrayList;
 public class FrontPage extends Fragment implements FragmentManager.OnBackStackChangedListener {
     View myView;
 
-    ArrayList<Users> users;
     FirebaseAuth authentication;
     DatabaseReference dbReference;
     ArrayList<Post> posts;
     Bundle bundle;
-    ProgressDialog pDialog;
     FloatingActionButton fab;
     NavigationView navigationView;
-    FirebaseAuth.AuthStateListener authStateListener;
     FirebaseUser firebaseUser;
-
     SwipeRefreshLayout refreshLayout;
-    String Uid;
-    Users tempU;
     Activity mActivity;
-    TextView name;
     ListView listView;
-    Handler userhandler;
-    Runnable userthread;
+    Users user;
+    String Sub;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -92,172 +87,238 @@ public class FrontPage extends Fragment implements FragmentManager.OnBackStackCh
         fragmentManager.addOnBackStackChangedListener(this);
         mActivity=getActivity();
     }
-    public void ShowProgressDialog() { // progress
-        if (pDialog == null) {
-            pDialog = new ProgressDialog(getContext());
-            pDialog.setMessage("Loading Posts");
-            pDialog.setIndeterminate(true);
-        }
-        pDialog.show();
-    }
-    public void HideProgressDialog() {
-        if(pDialog!=null && pDialog.isShowing()){
-            pDialog.dismiss();
-        }
-    }
-    public void setPostView(){
+
+    public void setDefaultPostView(){
         posts =new ArrayList<Post>();
-        dbReference.child("Sub").child("Soccer").child("posts").addValueEventListener(new ValueEventListener() {
+        // final ArrayList<String> SubCategory = user.getSubcategory(); // depending o nthe size of this we generate base off of this.
+        //  final int limit=15/SubCategory.size();
+        final AsyncTask<Void,Void,Void> loadpost = new AsyncTask<Void, Void, Void>() {
+
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                posts.clear();
-                for(DataSnapshot s: dataSnapshot.getChildren()){
-                    Post p= s.getValue(Post.class);
-                    p.setKey(s.getKey());
-                    p.setSubN("Soccer");
-                    posts.add(p);
+            protected Void doInBackground(Void... voids) {
+                try {
+                    do {
+                     //   user=((navigation)mActivity).getworkingUser();
+                      //  if(user!=null) {
+                            ArrayList<String> SubCategory = new ArrayList<>();
+                            SubCategory.add("Jesus");
+                            SubCategory.add("Soccer");
+                            SubCategory.add("Uplifting");
+                            int limit=15/SubCategory.size();
+                            long time_diff = (System.currentTimeMillis() / 1000) - (86400);
+                            for (int i = 0; i < SubCategory.size(); i++) {
+                                // Sub=SubCategory.get(i);
+                                dbReference.child("Sub").child(SubCategory.get(i)).child("posts").orderByChild("timestamp").startAt(time_diff).limitToFirst(limit).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        try {
+                                            for (DataSnapshot s : dataSnapshot.getChildren()) {
+                                                System.out.println(s.getValue());
+                                                Post post= s.getValue(Post.class);
+                                                post.setKey(s.getKey());
+                                                // post.setSubN();
+                                                posts.add(post);
+                                            }
+                                        } catch (DatabaseException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+                            }
+                            //  System.out.println(posts);
+                        //}
+                        Thread.sleep(1000);
+                    } while (posts.size()==0);
+
+                }catch (InterruptedException e){
+                    e.printStackTrace();
                 }
+
+                return null;
+            }
+
+            protected void onPostExecute(Void aVoid) {
                 Animation animation = AnimationUtils.loadAnimation(mActivity, R.anim.splashfadeoutleft);
+                Collections.shuffle(posts);
                 listView = (ListView)myView.findViewById(R.id.postview);
                 MyPostAdapter adapter = new MyPostAdapter(mActivity,posts);
                 listView.startAnimation(animation);
                 listView.setAdapter(adapter);
                 if(refreshLayout!=null)refreshLayout.setRefreshing(false);
-                HideProgressDialog();
-
-
-
+                ((navigation)mActivity).HideProgressDialog();
             }
-
+        };
+        loadpost.execute();
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(getActivity(), databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            public void run() {
+                if(loadpost.getStatus()==AsyncTask.Status.RUNNING){
+                    //if(firebaseUser!=null) {
+                        loadpost.cancel(true);
+                        ((navigation) mActivity).HideProgressDialog();
+                        Toast.makeText(mActivity, "Connection too slow", Toast.LENGTH_SHORT).show();
+                  //  }
+                  //  else{
+                 //       setDefaultPostView();
+                 //   }
+                }
             }
-        });
+        },10000);
+    }
+    public void setPostView(){
+        posts =new ArrayList<Post>();
+           // final ArrayList<String> SubCategory = user.getSubcategory(); // depending o nthe size of this we generate base off of this.
+          //  final int limit=15/SubCategory.size();
+            final AsyncTask<Void,Void,Void> loadpost = new AsyncTask<Void, Void, Void>() {
+
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    try {
+                        do {
+                            user=((navigation)mActivity).getworkingUser();
+                            if(user!=null) {
+                                ArrayList<String> SubCategory = user.getSubcategory();
+                                int limit=15/SubCategory.size();
+                                long time_diff = (System.currentTimeMillis() / 1000) - (86400);
+                                for (int i = 0; i < SubCategory.size(); i++) {
+                                   // Sub=SubCategory.get(i);
+                                    dbReference.child("Sub").child(SubCategory.get(i)).child("posts").orderByChild("timestamp").startAt(time_diff).limitToFirst(limit).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            try {
+                                                for (DataSnapshot s : dataSnapshot.getChildren()) {
+                                                    System.out.println(s.getValue());
+                                                    Post post= s.getValue(Post.class);
+                                                    post.setKey(s.getKey());
+                                                   // post.setSubN();
+                                                    posts.add(post);
+                                                }
+                                            } catch (DatabaseException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+                                    });
+                                }
+                              //  System.out.println(posts);
+                            }
+                            Thread.sleep(1000);
+                        } while (posts.size()==0);
+
+                    }catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
+
+                    return null;
+                }
+
+                protected void onPostExecute(Void aVoid) {
+                    Animation animation = AnimationUtils.loadAnimation(mActivity, R.anim.splashfadeoutleft);
+                    Collections.shuffle(posts);
+                    listView = (ListView)myView.findViewById(R.id.postview);
+                    MyPostAdapter adapter = new MyPostAdapter(mActivity,posts);
+                    listView.startAnimation(animation);
+                    listView.setAdapter(adapter);
+                    if(refreshLayout!=null)refreshLayout.setRefreshing(false);
+                    ((navigation)mActivity).HideProgressDialog();
+                }
+            };
+            loadpost.execute();
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if(loadpost.getStatus()==AsyncTask.Status.RUNNING){
+                        if(firebaseUser!=null) {
+                            loadpost.cancel(true);
+                            ((navigation) mActivity).HideProgressDialog();
+                            Toast.makeText(mActivity, "Connection too slow 123", Toast.LENGTH_SHORT).show();
+
+                        }else{
+
+                            setDefaultPostView();
+                        }
+                    }
+                }
+            },10000);
     }
     @Override
     public void onStart() {
         super.onStart();
-
+        Bundle bundle = getArguments();
+        navigationView = (NavigationView) getActivity().findViewById(R.id.nav_view);
         Menu nav_Menu = navigationView.getMenu();
-        authentication= FirebaseAuth.getInstance();
+        authentication = FirebaseAuth.getInstance();
         dbReference = FirebaseDatabase.getInstance().getReference(); // access to database
         firebaseUser = authentication.getCurrentUser();
-        NavigationView navigationView = (NavigationView)mActivity.findViewById(R.id.nav_view);
-        if(firebaseUser!=null) { // find if user is logged in set the title and replace sign in with logout
 
-            nav_Menu.findItem(R.id.login).setVisible(false);
-            nav_Menu.findItem(R.id.profile).setVisible(true);
-            nav_Menu.findItem(R.id.signout).setVisible(true);
-            ((navigation)mActivity).getUser();
-           /* final AsyncTask<Void, Void, Void> getuserName = new AsyncTask<Void, Void, Void>() {
-                @Override
-                protected void onPreExecute() {
-                    ShowProgressDialog();
+        if(firebaseUser!=null) {
+           // NavigationView navigationView = (NavigationView) mActivity.findViewById(R.id.nav_view);
+            if (firebaseUser != null) { // find if user is logged in set the title and replace sign in with logout
+
+                nav_Menu.findItem(R.id.login).setVisible(false);
+                nav_Menu.findItem(R.id.profile).setVisible(true);
+                nav_Menu.findItem(R.id.signout).setVisible(true);
+
+
+            } else {
+                nav_Menu.findItem(R.id.login).setVisible(true);
+                nav_Menu.findItem(R.id.profile).setVisible(false);
+                nav_Menu.findItem(R.id.signout).setVisible(false);
+            }
+            ((navigation) mActivity).ShowProgressDialog();
+           /* if(firebaseUser==null) {
+                if (bundle.get("user").equals("true")) {
+                    setPostView();
+                } else if (bundle.get("user").equals("false")) {
+                    setDefaultPostView();
                 }
-
-                @Override
-                protected Void doInBackground(Void... params) {
-                    try {
-                        //    boolean keepgoing = true;
-                        //Thread.sleep(1000);
-                        do {
-
-                            dbReference.child("Users").child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                    try {
-                                        tempU = dataSnapshot.getValue(Users.class);
-                                        name = (TextView) mActivity.findViewById(R.id.headText);
-                                    } catch (DatabaseException e) {
-                                        Toast.makeText(mActivity,"something went wrong",Toast.LENGTH_SHORT).show();
-                                        e.printStackTrace();
-                                    }
-                                }
-
-                                @Override
-                                public void onCancelled(DatabaseError databaseError) {
-
-                                }
-                            });
-                        } while (name != null && tempU!=null);
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    return null;
-                }
-                @Override
-                protected void onPostExecute(Void aVoid) {
-
-                  if(tempU!=null){
-                      name.setText(tempU.getUserName());
-                      if(tempU.getPicture()!=""&& tempU.getPicture()!=null) {
-                          final View layout = (View) mActivity.findViewById(R.id.navPic);
-                          byte[] decodedString = Base64.decode(tempU.getPicture(), Base64.DEFAULT);
-                          Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                          ((navigation)mActivity).setprofilepic(decodedByte);
-                          layout.setBackground(new BitmapDrawable(mActivity.getResources(),decodedByte));
-                      }
-                      Menu menu=((navigation)mActivity).getSubMenu();
-                      if(menu!=null){
-                          ArrayList<String> subcat =tempU.getSubcategory();
-                        for(int i=0; i<subcat.size();i++){
-                            menu.add(R.id.second_nav,Menu.NONE,0,subcat.get(i));
-                        }
-                      }
-
-                  }
-                    else System.out.println("error1");
-                  }
-
-
-            };
-            userhandler = new Handler();
-            getuserName.execute();
-            //userhandler.postDelayed
-            userthread= new Runnable() {
-                @Override
-                public void run() {
-                    if(getuserName.getStatus()==AsyncTask.Status.RUNNING){
-                        getuserName.cancel(true);
-                        HideProgressDialog();
-                        Toast.makeText(mActivity,"Error has occured ",Toast.LENGTH_SHORT).show();
-                    }
-                }
-            };//,5000);
-            userhandler.postDelayed(userthread,5000);*/
+            }
+            else{*/
+                setPostView();
+          //  }
         }
+        else if(bundle!=null){
+            if (bundle.get("user").equals("true")) {
+                setPostView();
+            } else if (bundle.get("user").equals("false")) {
+                setDefaultPostView();
+            }
+        }
+
         else{
-            nav_Menu.findItem(R.id.login).setVisible(true);
-            nav_Menu.findItem(R.id.profile).setVisible(false);
-            nav_Menu.findItem(R.id.signout).setVisible(false);
+            setDefaultPostView();
         }
-        setPostView();
     }
-
     @Override
     public void onStop() {
         super.onStop();
     }
 
+    @Override
+    public void onDestroy() {
+        ViewGroup container = (ViewGroup)mActivity.findViewById(R.id.content_frame);
+        container.removeAllViews();
+        super.onDestroy();
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getActivity().setTitle("Front Page");
+        mActivity.setTitle("Front Page");
         myView = inflater.inflate(R.layout.front_page,container,false);
-        bundle = new Bundle();
-        bundle = getArguments();
-        navigationView = (NavigationView)getActivity().findViewById(R.id.nav_view);
-        authentication= FirebaseAuth.getInstance(); // get instance of my firebase console
-        dbReference = FirebaseDatabase.getInstance().getReference(); // access to database
-        users = new ArrayList<>();
 
-        if(firebaseUser!=null){
-            SharedPreferences preferences = getContext().getSharedPreferences("pref",Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor =preferences.edit().putString("UID",firebaseUser.getUid());
-            editor.commit();
-        }
+        ((navigation)mActivity).hideAllSubscribe();
         refreshLayout = (SwipeRefreshLayout)myView.findViewById(R.id.swiperefresh);
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -282,19 +343,13 @@ public class FrontPage extends Fragment implements FragmentManager.OnBackStackCh
         });
 
         fab = (FloatingActionButton) getActivity().findViewById(R.id.compose);
-        FloatingActionButton fab_image = (FloatingActionButton) getActivity().findViewById(R.id.compse_images);
-        FloatingActionButton fab_desc = (FloatingActionButton) getActivity().findViewById(R.id.compse_desc);
+        FloatingActionButton fab_image = (FloatingActionButton) mActivity.findViewById(R.id.compse_images);
+        FloatingActionButton fab_desc = (FloatingActionButton) mActivity.findViewById(R.id.compse_desc);
         if(fab_image!=null)fab_image.hide();
         if(fab_desc!=null)fab_desc.hide();
         if(fab!=null)fab.show();
 
         return myView;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-    //    if(userhandler!=null)userhandler.removeCallbacks(userthread);
     }
 
     @Override

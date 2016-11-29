@@ -98,5 +98,10 @@ public class VoteBarFrame extends Fragment {
 
         return myView;
     }
+   /* public void onDestroy() {
+        ViewGroup container = (ViewGroup)mActivity.findViewById(R.id.content_frame);
+        container.removeAllViews();
+        super.onDestroy();
+    }*/
 
 }

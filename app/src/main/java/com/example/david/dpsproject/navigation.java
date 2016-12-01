@@ -1,6 +1,7 @@
 package com.example.david.dpsproject;
 
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.Context;
@@ -42,6 +43,7 @@ import com.example.david.dpsproject.Fragments.CreatePost;
 import com.example.david.dpsproject.Fragments.FrontPage;
 import com.example.david.dpsproject.Fragments.LogIn;
 import com.example.david.dpsproject.Fragments.ProfileFragment;
+import com.example.david.dpsproject.Fragments.Searchpage;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -66,6 +68,10 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
 
     NavigationView navigationView;
 
+    FloatingActionButton fab;
+    FloatingActionButton fab_image;
+    FloatingActionButton fab_desc;
+
     String filePath;
     Bitmap decodedprofilepic;
     ProgressDialog pDialog;
@@ -88,9 +94,9 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
         dbReference = FirebaseDatabase.getInstance().getReference(); // access to database
         firebaseUser = authentication.getCurrentUser();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.compose);
-        final FloatingActionButton fab_image = (FloatingActionButton) findViewById(R.id.compse_images);
-        final FloatingActionButton fab_desc = (FloatingActionButton) findViewById(R.id.compse_desc);
+        fab = (FloatingActionButton) findViewById(R.id.compose);
+        fab_image = (FloatingActionButton) findViewById(R.id.compse_images);
+        fab_desc = (FloatingActionButton) findViewById(R.id.compse_desc);
         fab_desc.setSize(FloatingActionButton.SIZE_MINI);
         fab_image.setSize(FloatingActionButton.SIZE_MINI);
 
@@ -128,19 +134,22 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
             public void onClick(View view) {
                 fab_desc.hide();
                 fab_image.hide();
-                android.app.FragmentManager fragmentManager = getFragmentManager();
-                fragmentManager.beginTransaction().replace(R.id.content_frame,new CreatePostImage()).commit();
+                CreatePostImage createPost = new CreatePostImage();
+                FragmentTransaction transaction= getFragmentManager().beginTransaction();
+                transaction.setCustomAnimations(R.animator.enter_anim,R.animator.exit_anim,R.animator.enter_anim_back,R.animator.exit_anime_back);
+                transaction.add(R.id.content_frame,createPost).addToBackStack("Posts").commit();
             }
         });
         fab_desc.setOnClickListener(new View.OnClickListener(){ // go to create desc
             public void onClick(View view) {
                 fab_desc.hide();
                 fab_image.hide();
-                android.app.FragmentManager fragmentManager = getFragmentManager();
-                fragmentManager.beginTransaction().replace(R.id.content_frame,new CreatePost()).commit();
+                CreatePost createPost = new CreatePost();
+                FragmentTransaction transaction= getFragmentManager().beginTransaction();
+                transaction.setCustomAnimations(R.animator.enter_anim,R.animator.exit_anim,R.animator.enter_anim_back,R.animator.exit_anime_back);
+                transaction.add(R.id.content_frame,createPost).addToBackStack("Posts").commit();
             }
         });
-      //  final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 
 
         final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -197,12 +206,26 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
         final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 
         if (getFragmentManager().getBackStackEntryCount() > 0 ){
+
             getFragmentManager().popBackStack();
+
         } else {
             super.onBackPressed();
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        showFab();
+    }
+
+    public void showFab(){
+
+        if(fab_image!=null)fab_image.hide();
+        if(fab_desc!=null)fab_desc.hide();
+        if(fab!=null)fab.show();
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -414,9 +437,7 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
                                 try {
                                     tempU = dataSnapshot.getValue(Users.class);
                                     name = (TextView) findViewById(R.id.headText);
-                                  //  byte[] decodedString = Base64.decode(tempU.getPicture(), Base64.DEFAULT);
-                                 //   decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                                   // setprofilepic(decodedByte);
+
                                 } catch (DatabaseException e) {
                                     Toast.makeText(getApplicationContext(), "something went wrong", Toast.LENGTH_SHORT).show();
                                     e.printStackTrace();
@@ -429,7 +450,7 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
                         });
                         //   Thread.sleep(1000);
                     } while (name != null && tempU != null);
-                    Thread.sleep(500);
+                    Thread.sleep(1000);
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -452,13 +473,17 @@ public class navigation extends AppCompatActivity implements NavigationView.OnNa
                     Menu menu=getSubMenu();
 
                     if(menu!=null) {
-                        ArrayList<String> subcat = tempU.getSubcategory();
+                        final ArrayList<String> subcat = tempU.getSubcategory();
                         for (int i = 0; i < subcat.size(); i++) {
                             menu.add(R.id.second_nav, Menu.NONE, 0, subcat.get(i));
+
                         }
                     }
                 }
-                else System.out.println("error1"); // set logout settings if this happens
+                else{
+                    freeUserData();
+                    HideProgressDialog();
+                }
             }
 
         };

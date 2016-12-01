@@ -34,11 +34,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AbsListView;
+import android.widget.Adapter;
 import android.widget.ListView;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.david.dpsproject.AsyncTask.LoadDefaultPostTask;
+import com.example.david.dpsproject.AsyncTask.LoadPostTask;
 import com.example.david.dpsproject.Class.Comment;
 import com.example.david.dpsproject.Class.Post;
 import com.example.david.dpsproject.Class.Users;
@@ -78,7 +82,7 @@ public class FrontPage extends Fragment implements FragmentManager.OnBackStackCh
     ListView listView;
     Users user;
     String Sub;
-
+    LoadPostTask loadPostTask;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -90,159 +94,40 @@ public class FrontPage extends Fragment implements FragmentManager.OnBackStackCh
 
     public void setDefaultPostView(){
         posts =new ArrayList<Post>();
-        // final ArrayList<String> SubCategory = user.getSubcategory(); // depending o nthe size of this we generate base off of this.
-        //  final int limit=15/SubCategory.size();
-        final AsyncTask<Void,Void,Void> loadpost = new AsyncTask<Void, Void, Void>() {
+        ArrayList<String> sub = new ArrayList<String>();
+        sub.add("Jesus");
+        sub.add("Soccer");
+        sub.add("Uplifting");
+        final LoadDefaultPostTask loadDefaultPostTask= new LoadDefaultPostTask(mActivity,dbReference,authentication,firebaseUser,sub,myView,refreshLayout);
 
-            @Override
-            protected Void doInBackground(Void... voids) {
-                try {
-                    do {
-                     //   user=((navigation)mActivity).getworkingUser();
-                      //  if(user!=null) {
-                            ArrayList<String> SubCategory = new ArrayList<>();
-                            SubCategory.add("Jesus");
-                            SubCategory.add("Soccer");
-                            SubCategory.add("Uplifting");
-                            int limit=15/SubCategory.size();
-                            long time_diff = (System.currentTimeMillis() / 1000) - (86400);
-                            for (int i = 0; i < SubCategory.size(); i++) {
-                                // Sub=SubCategory.get(i);
-                                dbReference.child("Sub").child(SubCategory.get(i)).child("posts").orderByChild("timestamp").startAt(time_diff).limitToFirst(limit).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(DataSnapshot dataSnapshot) {
-                                        try {
-                                            for (DataSnapshot s : dataSnapshot.getChildren()) {
-                                                System.out.println(s.getValue());
-                                                Post post= s.getValue(Post.class);
-                                                post.setKey(s.getKey());
-                                                // post.setSubN();
-                                                posts.add(post);
-                                            }
-                                        } catch (DatabaseException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(DatabaseError databaseError) {
-
-                                    }
-                                });
-                            }
-                            //  System.out.println(posts);
-                        //}
-                        Thread.sleep(1000);
-                    } while (posts.size()==0);
-
-                }catch (InterruptedException e){
-                    e.printStackTrace();
-                }
-
-                return null;
-            }
-
-            protected void onPostExecute(Void aVoid) {
-                Animation animation = AnimationUtils.loadAnimation(mActivity, R.anim.splashfadeoutleft);
-                Collections.shuffle(posts);
-                listView = (ListView)myView.findViewById(R.id.postview);
-                MyPostAdapter adapter = new MyPostAdapter(mActivity,posts);
-                listView.startAnimation(animation);
-                listView.setAdapter(adapter);
-                if(refreshLayout!=null)refreshLayout.setRefreshing(false);
-                ((navigation)mActivity).HideProgressDialog();
-            }
-        };
-        loadpost.execute();
+        loadDefaultPostTask.execute();
+        ((navigation) mActivity).ShowProgressDialog();
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if(loadpost.getStatus()==AsyncTask.Status.RUNNING){
-                    //if(firebaseUser!=null) {
-                        loadpost.cancel(true);
+                if(loadDefaultPostTask.getStatus()==AsyncTask.Status.RUNNING){
+                        loadDefaultPostTask.cancel(true);
                         ((navigation) mActivity).HideProgressDialog();
                         Toast.makeText(mActivity, "Connection too slow", Toast.LENGTH_SHORT).show();
-                  //  }
-                  //  else{
-                 //       setDefaultPostView();
-                 //   }
+
                 }
             }
         },10000);
     }
     public void setPostView(){
         posts =new ArrayList<Post>();
-           // final ArrayList<String> SubCategory = user.getSubcategory(); // depending o nthe size of this we generate base off of this.
-          //  final int limit=15/SubCategory.size();
-            final AsyncTask<Void,Void,Void> loadpost = new AsyncTask<Void, Void, Void>() {
-
-                @Override
-                protected Void doInBackground(Void... voids) {
-                    try {
-                        do {
-                            user=((navigation)mActivity).getworkingUser();
-                            if(user!=null) {
-                                ArrayList<String> SubCategory = user.getSubcategory();
-                                int limit=15/SubCategory.size();
-                                long time_diff = (System.currentTimeMillis() / 1000) - (86400);
-                                for (int i = 0; i < SubCategory.size(); i++) {
-                                   // Sub=SubCategory.get(i);
-                                    dbReference.child("Sub").child(SubCategory.get(i)).child("posts").orderByChild("timestamp").startAt(time_diff).limitToFirst(limit).addListenerForSingleValueEvent(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                            try {
-                                                for (DataSnapshot s : dataSnapshot.getChildren()) {
-                                                    System.out.println(s.getValue());
-                                                    Post post= s.getValue(Post.class);
-                                                    post.setKey(s.getKey());
-                                                   // post.setSubN();
-                                                    posts.add(post);
-                                                }
-                                            } catch (DatabaseException e) {
-                                                e.printStackTrace();
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onCancelled(DatabaseError databaseError) {
-
-                                        }
-                                    });
-                                }
-                              //  System.out.println(posts);
-                            }
-                            Thread.sleep(1000);
-                        } while (posts.size()==0);
-
-                    }catch (InterruptedException e){
-                        e.printStackTrace();
-                    }
-
-                    return null;
-                }
-
-                protected void onPostExecute(Void aVoid) {
-                    Animation animation = AnimationUtils.loadAnimation(mActivity, R.anim.splashfadeoutleft);
-                    Collections.shuffle(posts);
-                    listView = (ListView)myView.findViewById(R.id.postview);
-                    MyPostAdapter adapter = new MyPostAdapter(mActivity,posts);
-                    listView.startAnimation(animation);
-                    listView.setAdapter(adapter);
-                    if(refreshLayout!=null)refreshLayout.setRefreshing(false);
-                    ((navigation)mActivity).HideProgressDialog();
-                }
-            };
-            loadpost.execute();
+        loadPostTask= new LoadPostTask(mActivity,user,dbReference,authentication,firebaseUser,new ArrayList<String>(),myView,refreshLayout);
+            loadPostTask.execute();
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if(loadpost.getStatus()==AsyncTask.Status.RUNNING){
+                    if(loadPostTask.getStatus()==AsyncTask.Status.RUNNING){
                         if(firebaseUser!=null) {
-                            loadpost.cancel(true);
+                            loadPostTask.cancel(true);
                             ((navigation) mActivity).HideProgressDialog();
-                            Toast.makeText(mActivity, "Connection too slow 123", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mActivity, "Connection too slow", Toast.LENGTH_SHORT).show();
 
                         }else{
 
@@ -264,27 +149,13 @@ public class FrontPage extends Fragment implements FragmentManager.OnBackStackCh
 
         if(firebaseUser!=null) {
            // NavigationView navigationView = (NavigationView) mActivity.findViewById(R.id.nav_view);
-            if (firebaseUser != null) { // find if user is logged in set the title and replace sign in with logout
+            // find if user is logged in set the title and replace sign in with logout
 
                 nav_Menu.findItem(R.id.login).setVisible(false);
                 nav_Menu.findItem(R.id.profile).setVisible(true);
                 nav_Menu.findItem(R.id.signout).setVisible(true);
 
-
-            } else {
-                nav_Menu.findItem(R.id.login).setVisible(true);
-                nav_Menu.findItem(R.id.profile).setVisible(false);
-                nav_Menu.findItem(R.id.signout).setVisible(false);
-            }
             ((navigation) mActivity).ShowProgressDialog();
-           /* if(firebaseUser==null) {
-                if (bundle.get("user").equals("true")) {
-                    setPostView();
-                } else if (bundle.get("user").equals("false")) {
-                    setDefaultPostView();
-                }
-            }
-            else{*/
                 setPostView();
           //  }
         }
@@ -292,12 +163,19 @@ public class FrontPage extends Fragment implements FragmentManager.OnBackStackCh
             if (bundle.get("user").equals("true")) {
                 setPostView();
             } else if (bundle.get("user").equals("false")) {
+
+                nav_Menu.findItem(R.id.login).setVisible(true);
+                nav_Menu.findItem(R.id.profile).setVisible(false);
+                nav_Menu.findItem(R.id.signout).setVisible(false);
                 setDefaultPostView();
             }
         }
 
         else{
             setDefaultPostView();
+            nav_Menu.findItem(R.id.login).setVisible(true);
+            nav_Menu.findItem(R.id.profile).setVisible(false);
+            nav_Menu.findItem(R.id.signout).setVisible(false);
         }
     }
     @Override
@@ -317,9 +195,9 @@ public class FrontPage extends Fragment implements FragmentManager.OnBackStackCh
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mActivity.setTitle("Front Page");
         myView = inflater.inflate(R.layout.front_page,container,false);
-
         ((navigation)mActivity).hideAllSubscribe();
         refreshLayout = (SwipeRefreshLayout)myView.findViewById(R.id.swiperefresh);
+        listView = (ListView)myView.findViewById(R.id.postview);
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -342,7 +220,7 @@ public class FrontPage extends Fragment implements FragmentManager.OnBackStackCh
             }
         });
 
-        fab = (FloatingActionButton) getActivity().findViewById(R.id.compose);
+        fab = (FloatingActionButton) mActivity.findViewById(R.id.compose);
         FloatingActionButton fab_image = (FloatingActionButton) mActivity.findViewById(R.id.compse_images);
         FloatingActionButton fab_desc = (FloatingActionButton) mActivity.findViewById(R.id.compse_desc);
         if(fab_image!=null)fab_image.hide();
@@ -365,6 +243,7 @@ public class FrontPage extends Fragment implements FragmentManager.OnBackStackCh
         final DrawerLayout drawer = (DrawerLayout) mActivity.findViewById(R.id.drawer_layout);
         Toolbar toolbar = (Toolbar) mActivity.findViewById(R.id.toolbar);
         final ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(mActivity, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+
         if (((navigation) mActivity).getFragmentManager().getBackStackEntryCount() > 0) {
             ((navigation) mActivity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             toolbar.setNavigationOnClickListener(new View.OnClickListener() {

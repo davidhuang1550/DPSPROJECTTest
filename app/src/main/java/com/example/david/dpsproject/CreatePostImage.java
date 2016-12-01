@@ -170,7 +170,8 @@ public class CreatePostImage  extends Fragment implements View.OnClickListener{
                                                     postref.setValue(post);
                                                     subString.add(postref.getKey());
                                                     dbReference.child("Users").child(firebaseUser.getUid()).child("Posts").child(sub_cat).setValue(subString);
-                                                    fragmentManager.beginTransaction().replace(R.id.content_frame, frontPage).commit();
+                                                   // fragmentManager.beginTransaction().replace(R.id.content_frame, frontPage).commit();
+                                                   // fragmentManager.beginTransaction().remove(getParentFragment());
                                                 } else {
                                                     Sub sub = new Sub();
                                                     Post first_post = new Post("ADMIN", "FIRST POST OF THE SUB", "",new Long(0),sub_cat); // first one
@@ -183,8 +184,10 @@ public class CreatePostImage  extends Fragment implements View.OnClickListener{
 
                                                     dbReference.child("Sub").child(sub_cat).child("posts").child("0").removeValue(); // remove inital commit
 
-                                                    fragmentManager.beginTransaction().replace(R.id.content_frame, frontPage).commit();
+                                                   // fragmentManager.beginTransaction().replace(R.id.content_frame, frontPage).commit();
+                                                  //  fragmentManager.beginTransaction().remove(getParentFragment());
                                                 }
+
 
 
 
@@ -213,6 +216,7 @@ public class CreatePostImage  extends Fragment implements View.OnClickListener{
 
                         }
                     });
+                    getFragmentManager().beginTransaction().remove(this);
 
                 }
 

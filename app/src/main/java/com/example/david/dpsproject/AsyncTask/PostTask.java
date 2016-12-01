@@ -76,13 +76,9 @@ public class PostTask extends AsyncTask<Void,Void,Void> {
             do{
 
                 if(no!=0){
-                   // post.IncNo();
-                  //  dbReference.child("Sub").child("Soccer").child("posts").child(post.getKey()).setValue(post);
                     stop=true;
                 }
                 else if(yes!=0){
-                   // post.getKey();
-                   // dbReference.child("Sub").child("Soccer").child("posts").child(post.getKey()).setValue(post);
                     stop=true;
                 }
             }while(!stop);

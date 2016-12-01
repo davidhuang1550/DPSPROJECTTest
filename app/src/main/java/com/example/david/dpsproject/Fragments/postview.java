@@ -84,7 +84,7 @@ public class postview extends Fragment  {
 
 
         if (firebaseUser != null) {
-            databaseReference.child("Users").child(firebaseUser.getUid()).child("viewed").child("Soccer").addListenerForSingleValueEvent(new ValueEventListener() {
+            databaseReference.child("Users").child(firebaseUser.getUid()).child("Viewed").child("Soccer").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     try {

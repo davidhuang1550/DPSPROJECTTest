@@ -19,6 +19,7 @@ import com.example.david.dpsproject.Class.Profile;
 import com.example.david.dpsproject.Class.Sub;
 import com.example.david.dpsproject.Class.Users;
 import com.example.david.dpsproject.R;
+import com.example.david.dpsproject.navigation;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -107,19 +108,9 @@ public class CreatePost extends Fragment implements View.OnClickListener{
                                         DatabaseReference postref=dbReference.child("Sub").child(sub_cat).child("posts").push();
                                         postref.setValue(post);
 
-
-                                     //   profile.getSubstring(postref.getKey());
                                         subString.add(postref.getKey());
 
                                         dbReference.child("Users").child(firebaseUser.getUid()).child("Posts").child(sub_cat).setValue(subString);
-
-                                        //String tempkey= Integer.toString(postref.getKey()) ;
-                                       /* String tempTime=Long.toString((System.currentTimeMillis()/1000));
-                                        HashMap<String,String> temphash= new HashMap<String, String>();
-                                        temphash.put(postref.getKey().toString(),tempTime+"_0");
-                                        DatabaseReference post2ref=dbReference.child("SubPost").child(sub_cat).push();
-                                        post2ref.setValue(temphash);*/
-
 
                                     } else {
                                         Sub sub = new Sub();
@@ -131,17 +122,9 @@ public class CreatePost extends Fragment implements View.OnClickListener{
                                         DatabaseReference postref=dbReference.child("Sub").child(sub_cat).child("posts").push();
                                         postref.setValue(post);
 
-                                      //  profile.getSubstring(sub_cat,postref.getKey());
-
-                                      //  dbReference.child("Users").child(firebaseUser.getUid()).child("Posts").setValue(profile);
                                         subString.add(postref.getKey());
                                         dbReference.child("Users").child(firebaseUser.getUid()).child("Posts").child(sub_cat).setValue(subString);
 
-                                       /* String tempTime=Long.toString((System.currentTimeMillis()/1000));
-                                        HashMap<String,String> temphash= new HashMap<String, String>();
-                                        temphash.put(postref.getKey().toString(),tempTime+"_0");
-                                        DatabaseReference post2ref=dbReference.child("SubPost").child(sub_cat).push();
-                                        post2ref.setValue(temphash);*/
 
                                         dbReference.child("Sub").child(sub_cat).child("posts").child("0").removeValue(); // remove inital commit
                                     }
@@ -171,18 +154,15 @@ public class CreatePost extends Fragment implements View.OnClickListener{
             });
             FrontPage frontPage = new FrontPage();
             FragmentManager fragmentManager = mActivity.getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.content_frame, frontPage).commit();
+            ((navigation)mActivity).showFab();
+            fragmentManager.beginTransaction().remove(this);
+          //  fragmentManager.beginTransaction().replace(R.id.content_frame, frontPage).commit();
 
         }
         else{
             Toast.makeText(getActivity(),"Every Field Must not be empty",Toast.LENGTH_SHORT).show();
         }
 
-    }
-    public void onDestroy() {
-        ViewGroup container = (ViewGroup)mActivity.findViewById(R.id.content_frame);
-        container.removeAllViews();
-        super.onDestroy();
     }
 
 }
